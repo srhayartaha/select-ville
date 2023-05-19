@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/fr.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <select id="search-select" style="min-width: 400px"></select>
+    <select id="cities"></select>
+    <select id="postcodes"></select>
+    <script>
+      $(document).ready(function () {
+        // Initialisez le Select2 pour la balise <select>
+        $("#search-select").select2({
+          placeholder: "Entrez une localisation",
+          ajax: {
+            url: "https://api.geoapify.com/v1/geocode/autocomplete",
+            dataType: "json",
+            delay: 250,
+            language: "fr",
+            data: function (params) {
+              return {
+                apiKey: "21be2516fb7b4104a13acfdf3bea9a59",
+                text: params.term,
+              };
+            },
+            processResults: function (data) {
+              let cities = [];
+              let postcodes = [];
+              console.log(data.features);
+              for (let i = 0; i < data.features.length; i++) {
+                if (
+                  data.features[i].properties.city &&
+                  !cities.includes(data.features[i].properties.city)
+                ) {
+                  cities.push(data.features[i].properties.city);
+                }
+                if (
+                  data.features[i].properties.postcode &&
+                  !cities.includes(data.features[i].properties.postcode)
+                ) {
+                  postcodes.push(data.features[i].properties.postcode);
+                }
+              }
+              $("#cities").empty();
+              $("#postcodes").empty();
+              for (let i = 0; i < cities.length; i++) {
+                $("#cities").prepend(
+                  '<option value="' +
+                    cities[i] +
+                    '">' +
+                    cities[i] +
+                    "</option> "
+                );
+              }
+              for (let i = 0; i < postcodes.length; i++) {
+                $("#postcodes").prepend(
+                  '<option value="' +
+                    postcodes[i] +
+                    '">' +
+                    postcodes[i] +
+                    "</option> "
+                );
+              }
+              return {
+                results: data.features.map(function (item) {
+                  return {
+                    id: item.properties.place_id,
+                    text: item.properties.formatted,
+                  };
+                }),
+              };
+            },
+            cache: true,
+          },
+          minimumInputLength: 1,
+        });
+      });
+    </script>
+  </body>
+</html>
